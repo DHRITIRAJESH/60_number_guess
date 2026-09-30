@@ -25,7 +25,6 @@ class GameEngine:
         if self.game_won:
             return
 
-        # Validate input before converting to int
         text = self.input_box.text.strip()
 
         if not text:
@@ -44,11 +43,15 @@ class GameEngine:
         self.input_box.clear()
 
         if guess < self.secret_number:
+            self.low_bound = max(self.low_bound, guess + 1)
             self.feedback_msg = f"TOO LOW! (Guess was {guess})"
             self.feedback_color = (80, 160, 240)
+
         elif guess > self.secret_number:
+            self.high_bound = min(self.high_bound, guess - 1)
             self.feedback_msg = f"TOO HIGH! (Guess was {guess})"
             self.feedback_color = (240, 100, 80)
+
         else:
             self.feedback_msg = f"CORRECT! Found in {self.attempts} attempts."
             self.feedback_color = (80, 220, 90)
@@ -57,11 +60,13 @@ class GameEngine:
     def reset(self):
         self.secret_number = random.randint(1, 100)
         self.attempts = 0
+        self.low_bound = 1
+        self.high_bound = 100
         self.feedback_msg = "Enter a number between 1 and 100"
         self.feedback_color = (220, 220, 220)
         self.game_won = False
         self.input_box.clear()
-
+        
     def handle_event(self, event):
         self.input_box.handle_event(event)
 
@@ -84,8 +89,24 @@ class GameEngine:
         title_surf = self.font_title.render("Number Guessing Arena", True, (245, 245, 245))
         screen.blit(title_surf, (self.width // 2 - title_surf.get_width() // 2, 35))
 
-        attempts_surf = self.font_medium.render(f"Attempts: {self.attempts}", True, (180, 185, 195))
-        screen.blit(attempts_surf, (self.width // 2 - attempts_surf.get_width() // 2, 95))
+        attempts_surf = self.font_medium.render(
+            f"Attempts: {self.attempts}", True, (180, 185, 195)
+        )
+        screen.blit(
+            attempts_surf,
+            (self.width // 2 - attempts_surf.get_width() // 2, 95)
+        )
+
+        range_surf = self.font_medium.render(
+            f"Current Possible Range: {self.low_bound} - {self.high_bound}",
+            True,
+            (180, 185, 195)
+        )
+        screen.blit(
+            range_surf,
+            (self.width // 2 - range_surf.get_width() // 2, 125)
+        )
+
         self.input_box.render(screen)
 
         pygame.draw.rect(screen, (50, 150, 80), self.submit_btn, border_radius=6)
