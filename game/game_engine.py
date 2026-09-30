@@ -8,6 +8,8 @@ class GameEngine:
         self.height = height
         self.secret_number = random.randint(1, 100)
         self.attempts = 0
+        self.low_bound = 1
+        self.high_bound = 100
         self.feedback_msg = "Enter a number between 1 and 100"
         self.feedback_color = (220, 220, 220)
         self.game_won = False
@@ -23,10 +25,21 @@ class GameEngine:
         if self.game_won:
             return
 
-        # BUG SYMPTOM:
-        # Submitting an empty input box crashes the game immediately.
-        guess = int(self.input_box.text)
-        
+        # Validate input before converting to int
+        text = self.input_box.text.strip()
+
+        if not text:
+            self.feedback_msg = "Please enter a valid number first."
+            self.feedback_color = (240, 200, 80)
+            return
+
+        try:
+            guess = int(text)
+        except ValueError:
+            self.feedback_msg = "Please enter a valid number first."
+            self.feedback_color = (240, 200, 80)
+            return
+
         self.attempts += 1
         self.input_box.clear()
 
@@ -40,7 +53,7 @@ class GameEngine:
             self.feedback_msg = f"CORRECT! Found in {self.attempts} attempts."
             self.feedback_color = (80, 220, 90)
             self.game_won = True
-
+        
     def reset(self):
         self.secret_number = random.randint(1, 100)
         self.attempts = 0
